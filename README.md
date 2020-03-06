@@ -1,6 +1,6 @@
 # Pytorch BPDA
 
-A simple way to implement Backward Pass Differentiable Approximation (BPDA) [1] in Pytorch.  
+A simple way to implement the **Backward Pass Differentiable Approximation (BPDA) [1]** in Pytorch.  
 
 
 ```python
