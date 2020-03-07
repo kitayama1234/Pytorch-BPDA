@@ -24,25 +24,25 @@ def round_func_BPDA(input):
 def forward(x, round_func):
     w = torch.tensor([2.3])
     b = torch.tensor([5.7])
-    y1 = x * w            # differentiable
-    y2 = y1 + b           # differentiable
-    y3 = y2 ** 2          # differentiable
-    y4 = round_func(y3)   # non-differentiable (obfuscated gradients)
-    y5 = y4 * 3           # differentiable
-    y6 = y5.sum()         # differentiable
-    return y6
+    out = x * w + b            # differentiable
+    out = round_func(out)      # non-differentiable (obfuscated gradients)
+    out = out * 0.1            # differentiable
+    out = torch.sigmoid(out)   # differentiable
+    return out
 
 
 # compare the two
 x = torch.tensor([2.4, 3.5], requires_grad=True)
 out = forward(x, round_func_normal)
-out.backward()
-print("output:", out, "x.grad:", x.grad)
+loss = torch.nn.functional.smooth_l1_loss(out, torch.tensor([0.4, 0.62]))
+loss.backward()
+print("output:", loss, ", x.grad:", x.grad)
 
 x = torch.tensor([2.4, 3.5], requires_grad=True)
 out = forward(x, round_func_BPDA)
-out.backward()
-print("output:", out, "x.grad:", x.grad)
+loss = torch.nn.functional.smooth_l1_loss(out, torch.tensor([0.4, 0.62]))
+loss.backward()
+print("output:", loss, ", x.grad:", x.grad)
 
 ```
   
