@@ -1,7 +1,7 @@
 # Pytorch BPDA
 
-A simple way to implement the **Backward Pass Differentiable Approximation (BPDA) [1]** in Pytorch.  
-
+A simple way to implement the **Backward Pass Differentiable Approximation (BPDA) [1]** in a Pytorch model.
+  
 
 ```python
 import torch
@@ -41,21 +41,24 @@ x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
 out = forward(x, lambda x: x)
 loss = F.binary_cross_entropy(out, torch.tensor([1.]).view(1, -1))
 loss.backward()
-print("x.grad:", x.grad)   # tensor([[[ 0.0218, -0.0133]]])
+print(loss)           # tensor(0.8104, grad_fn=<BinaryCrossEntropyBackward>)
+print(x.grad)         # tensor([[[ 0.0218, -0.0133]]])
 
 # scenario 2: Defenced by round function (shattered gradients)
 x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
 out = forward(x, round_func_normal)
 loss = F.binary_cross_entropy(out, torch.tensor([1.]).view(1, -1))
 loss.backward()
-print("x.grad:", x.grad)   # tensor([[[-0., 0.]]])
+print(loss)           # tensor(0.8092, grad_fn=<BinaryCrossEntropyBackward>)
+print(x.grad)         # tensor([[[-0., 0.]]])
 
 # scenario 3: Defenced by round function, attached by BPDA
 x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
 out = forward(x, round_func_BPDA)
 loss = F.binary_cross_entropy(out, torch.tensor([1.]).view(1, -1))
 loss.backward()
-print("x.grad:", x.grad)   # tensor([[[ 0.0217, -0.0133]]])
+print(loss)           # tensor(0.8092, grad_fn=<BinaryCrossEntropyBackward>)
+print(x.grad)         # tensor([[[ 0.0217, -0.0133]]])
 
 ```
   
