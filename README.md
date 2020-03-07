@@ -28,7 +28,7 @@ def forward(x, round_func):
     linear.bias.data = torch.tensor([-0.3856])
     out = linear(x)            # differentiable
     out = out * 10             # differentiable
-    out = round_func(out)      # defenced by non-differentiable operation (shattered gradients)
+    out = round_func(out)      # defended by non-differentiable operation (shattered gradients)
     out = out * 0.01           # differentiable
     out = torch.sigmoid(out)   # differentiable
     return out
@@ -44,7 +44,7 @@ loss.backward()
 print(loss)           # tensor(0.8104, grad_fn=<BinaryCrossEntropyBackward>)
 print(x.grad)         # tensor([[[ 0.0218, -0.0133]]])
 
-# scenario 2: Defenced by round function (shattered gradients)
+# scenario 2: Defended by round function (shattered gradients)
 x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
 out = forward(x, round_func_normal)
 loss = F.binary_cross_entropy(out, torch.tensor([1.]).view(1, -1))
@@ -52,7 +52,7 @@ loss.backward()
 print(loss)           # tensor(0.8092, grad_fn=<BinaryCrossEntropyBackward>)
 print(x.grad)         # tensor([[[-0., 0.]]])
 
-# scenario 3: Defenced by round function, attached by BPDA
+# scenario 3: Defended by round function, attached by BPDA
 x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
 out = forward(x, round_func_BPDA)
 loss = F.binary_cross_entropy(out, torch.tensor([1.]).view(1, -1))
