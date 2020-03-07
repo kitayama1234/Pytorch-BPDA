@@ -15,7 +15,7 @@ def round_func_normal(input):
 
 def round_func_BPDA(input):
     # This is equivalent to replacing round function (non-differentiable) with
-    # the identity function (differentiable) only when backward.
+    # an identity function (differentiable) only when backward.
     forward_value = torch.round(input)
     out = input.clone()
     out.data = forward_value.data
