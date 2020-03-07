@@ -39,23 +39,23 @@ def forward(x, round_func):
 # scenario 1: No Defence
 x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
 out = forward(x, lambda x: x)
-loss = F.binary_cross_entropy(out, torch.tensor([0.62]).view(1, -1))
+loss = F.binary_cross_entropy(out, torch.tensor([1.]).view(1, -1))
 loss.backward()
-print("x.grad:", x.grad)   # x.grad: tensor([[[ 0.0069, -0.0042]]])
+print("x.grad:", x.grad)   # tensor([[[ 0.0218, -0.0133]]])
 
 # scenario 2: Defenced by round function (shattered gradients)
 x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
 out = forward(x, round_func_normal)
-loss = F.binary_cross_entropy(out, torch.tensor([0.62]).view(1, -1))
+loss = F.binary_cross_entropy(out, torch.tensor([1.]).view(1, -1))
 loss.backward()
-print("x.grad:", x.grad)   # x.grad: tensor([[[-0., 0.]]])
+print("x.grad:", x.grad)   # tensor([[[-0., 0.]]])
 
 # scenario 3: Defenced by round function, attached by BPDA
 x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
 out = forward(x, round_func_BPDA)
-loss = F.binary_cross_entropy(out, torch.tensor([0.62]).view(1, -1))
+loss = F.binary_cross_entropy(out, torch.tensor([1.]).view(1, -1))
 loss.backward()
-print("x.grad:", x.grad)   # x.grad: tensor([[[ 0.0068, -0.0042]]])
+print("x.grad:", x.grad)   # tensor([[[ 0.0217, -0.0133]]])
 
 ```
   
