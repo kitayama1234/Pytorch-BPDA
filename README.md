@@ -5,6 +5,7 @@ A simple way to implement the **Backward Pass Differentiable Approximation (BPDA
 
 ```python
 import torch
+import torch.nn.functional as F
 
 
 def round_func_normal(input):
@@ -22,27 +23,39 @@ def round_func_BPDA(input):
 
 
 def forward(x, round_func):
-    w = torch.tensor([2.3])
-    b = torch.tensor([5.7])
-    out = x * w + b            # differentiable
-    out = round_func(out)      # non-differentiable (obfuscated gradients)
-    out = out * 0.1            # differentiable
+    linear = torch.nn.Linear(2, 1)
+    linear.weight.data = torch.tensor([-0.3917, 0.2402])
+    linear.bias.data = torch.tensor([-0.3856])
+    out = linear(x)            # differentiable
+    out = out * 10             # differentiable
+    out = round_func(out)      # defenced by non-differentiable operation (shattered gradients)
+    out = out * 0.01           # differentiable
     out = torch.sigmoid(out)   # differentiable
     return out
 
 
-# compare the two
-x = torch.tensor([2.4, 3.5], requires_grad=True)
-out = forward(x, round_func_normal)
-loss = torch.nn.functional.smooth_l1_loss(out, torch.tensor([0.4, 0.62]))
-loss.backward()
-print("output:", loss, ", x.grad:", x.grad)
+# compare the three scenarios
 
-x = torch.tensor([2.4, 3.5], requires_grad=True)
-out = forward(x, round_func_BPDA)
-loss = torch.nn.functional.smooth_l1_loss(out, torch.tensor([0.4, 0.62]))
+# scenario 1: No Defence
+x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
+out = forward(x, lambda x: x)
+loss = F.binary_cross_entropy(out, torch.tensor([0.62]).view(1, -1))
 loss.backward()
-print("output:", loss, ", x.grad:", x.grad)
+print("x.grad:", x.grad)   # x.grad: tensor([[[ 0.0069, -0.0042]]])
+
+# scenario 2: Defenced by round function (shattered gradients)
+x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
+out = forward(x, round_func_normal)
+loss = F.binary_cross_entropy(out, torch.tensor([0.62]).view(1, -1))
+loss.backward()
+print("x.grad:", x.grad)   # x.grad: tensor([[[-0., 0.]]])
+
+# scenario 3: Defenced by round function, attached by BPDA
+x = torch.tensor([4, -1.12]).view(1, 1, -1).requires_grad_(True)
+out = forward(x, round_func_BPDA)
+loss = F.binary_cross_entropy(out, torch.tensor([0.62]).view(1, -1))
+loss.backward()
+print("x.grad:", x.grad)   # x.grad: tensor([[[ 0.0068, -0.0042]]])
 
 ```
   
